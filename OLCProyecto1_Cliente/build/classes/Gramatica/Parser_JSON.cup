@@ -1,0 +1,279 @@
+
+package Gramatica;
+
+import java_cup.runtime.*;
+import Result.*;//nuevo
+
+
+
+
+parser code
+{:
+	//public String nombre_clase="n/a";
+    /**Metodo al que se llama automáticamente ante algún error sintactico.*/
+	private Nodo raiz=null;
+	private Resultado resultado_json = new Resultado();
+	
+    public void syntax_error(Symbol s){
+        System.err.println("Error en la Línea " + (s.right+1) +" Columna "+(s.left+1)+ ". Identificador "
+        +s.value + " no reconocido." );
+    }
+
+    /**Metodo al que se llama en el momento en que ya no es posible una recuperación de
+    errores.*/
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{
+        System.err.println("Error en la Línea " + (s.right+1)+ " Columna "+(s.left+1)+". Identificador " +
+        s.value + " no reconocido.");
+        System.out.println("Error sintactico:"+s);
+    
+    }
+	
+	public Nodo getRaiz(){
+		return raiz;
+	}
+	public Resultado getResultado(){
+		return resultado_json;
+	}
+	
+	private void addToResult(String id, Nodo raiz){
+		if(!raiz.haveChild()){
+			return;
+		}
+		switch(id){
+			case "\"Variables\"":
+				addVariable(raiz);
+				break;
+			case "\"score\"":
+				resultado_json.Score(Double.parseDouble(raiz.hijos.get(0).lexema));
+				break;
+			case "\"Metodos\"":
+				addMetodo(raiz);
+				break;
+			case "\"Comentarios\"":
+				addComentario(raiz);
+				break;
+			case "\"Clases\"":
+				addClase(raiz);
+				break;
+			default:
+				break;
+		}
+	}
+	
+	//<editor-fold defaultstate="collapsed" desc="Auxiliares">
+	private void addVariable(Nodo raiz){
+		String nombre;
+		String tipo;
+		String funcion;
+		String clase;
+		for(Nodo miembro:raiz.hijos){
+			nombre=miembro.hijos.get(0).hijos.get(0).lexema;
+			tipo=miembro.hijos.get(1).hijos.get(0).lexema;
+			funcion=miembro.hijos.get(2).hijos.get(0).lexema;
+			clase=miembro.hijos.get(3).hijos.get(0).lexema;
+			if(funcion.equals("n/a")){
+				funcion=null;
+			}
+			resultado_json.add(new Variable(nombre,tipo,funcion,clase));
+		}
+	}
+	private void addMetodo(Nodo raiz){
+		String nombre;
+		String tipo;
+		String parametros;
+		for(Nodo miembro:raiz.hijos){
+			nombre=miembro.hijos.get(0).hijos.get(0).lexema;
+			tipo=miembro.hijos.get(1).hijos.get(0).lexema;
+			parametros=miembro.hijos.get(2).hijos.get(0).lexema;
+			resultado_json.add(new Funcion(nombre,tipo,parametros));
+		}
+	}
+	private void addComentario(Nodo raiz){
+		String texto;
+		for(Nodo miembro:raiz.hijos){
+			texto=miembro.hijos.get(0).hijos.get(0).lexema;
+			resultado_json.add(new Comentario(texto));
+		}
+	}
+	private void addClase(Nodo raiz){
+		String nombre;
+		for(Nodo miembro:raiz.hijos){
+			nombre=miembro.hijos.get(0).hijos.get(0).lexema;
+			resultado_json.add(new Clase(nombre));
+		}		
+	}
+	//</editor-fold>
+	
+	
+	
+:}
+
+
+action code {:
+    //public Nodo raiz=null;
+    //String clase_actual;
+	
+:}
+
+/*terminales*/
+	//null
+terminal String nulo;
+	//BOOLEANOS
+terminal String verdadero,falso;
+	//AGRUPACION Y PUNTUACION
+terminal String lParen,rParen,coma,lBrack,rBrack,lKey,rKey,d_puntos;
+	//OTROS
+terminal String tk_Racional,tk_Cadena,tk_Entero,menos;//texto_Html es nuevo
+/*
+* Este terminal tiene un valor string. Recuerda que le dábamos el valor
+* en el código del analizador léxico, al darle como parámetro un valor
+* string al objeto Symbolo.
+*/
+
+
+/*
+* Aquí están los no terminales
+*/
+non terminal S;
+non terminal Nodo INICIO;
+non terminal Nodo OBJETO,ARREGLO;
+non terminal Nodo MIEMBROS,PAR,VALOR,ELEMENTOS;
+
+
+
+
+/* Precedencia */
+/* ­­­­­­­­­­­­­­ Declaración de la gramática  ­­­­­­­­­­­ */
+start with S;
+
+S				::=INICIO:v1
+				{:
+					raiz=v1;
+				:}
+				;
+
+INICIO			::=INICIO:v1 OBJETO:v2
+				{:
+					v1.add(v2);
+					RESULT=v1;
+				:}
+				|INICIO:v1 ARREGLO:v2
+				{:
+					v1.add(v2);
+					RESULT=v1;
+				:}
+				|OBJETO:v1//como cada json tendra solo un objeto general, aqui reduciria siempre que llegue a inicio
+				{:
+					Nodo padre = new Nodo("","INICIO");
+					padre.add(v1);
+					RESULT=padre;
+				:}
+				|ARREGLO:v1
+				{:
+					Nodo padre = new Nodo("","INICIO");
+					padre.add(v1);
+					RESULT=padre;
+				:}
+				;
+
+OBJETO			::=lKey MIEMBROS:v1 rKey
+				{:
+					RESULT=v1;
+				:}
+				|lKey rKey;
+
+MIEMBROS		::=MIEMBROS:v1 coma PAR:v2
+				{:
+					v1.add(v2);
+					RESULT=v1;
+				:}
+				|PAR:v1
+				{:
+					Nodo padre = new Nodo("","MIEMBROS");
+					padre.add(v1);
+					RESULT=padre;
+				:}
+				;
+
+PAR				::=tk_Cadena:v1 d_puntos VALOR:v2
+				{:
+					Nodo padre = new Nodo(v1,"PAR");
+					//padre.add(v2);
+					padre.childSteal(v2);
+					addToResult(v1,padre);//nuevo
+					RESULT=padre;
+				:}
+				;
+				
+ARREGLO			::=lBrack ELEMENTOS:v1 rBrack
+				{:
+					RESULT=v1;
+				:}
+				|lBrack rBrack;
+
+ELEMENTOS		::=ELEMENTOS:v1 coma VALOR:v2
+				{:
+					Nodo padre = v1;
+					padre.add(v2);
+					RESULT = padre;
+				:}
+				|VALOR:v1
+				{:
+					Nodo padre = new Nodo("","VALOR");
+					padre.add(v1);
+					RESULT = padre;
+				:}
+				;
+				
+VALOR			::=tk_Cadena:v1
+				{:
+					RESULT = new Nodo(v1,"tk_Cadena");
+				:}
+				|tk_Entero:v1
+				{:
+					RESULT = new Nodo(v1,"tk_Entero");
+				:}
+				|menos tk_Entero:v1
+				{:
+					RESULT = new Nodo(v1,"tk_Entero");
+				:}
+				|tk_Racional:v1
+				{:
+					RESULT = new Nodo(v1,"tk_Racional");
+				:}
+				|menos tk_Racional:v1
+				{:
+					RESULT = new Nodo(v1,"tk_Racional");
+				:}
+				|OBJETO:v1
+				{:
+					RESULT = v1;
+				:}
+				|ARREGLO:v1
+				{:
+					RESULT = v1;
+				:}
+				|verdadero:v1
+				{:	
+					RESULT = new Nodo(v1,"Booleano");
+				:}				
+				|falso:v1
+				{:
+					RESULT = new Nodo(v1,"Booleano");
+				:}
+				|nulo:v1
+				{:
+					RESULT = new Nodo(v1,"Nulo");
+				:}
+				;
+
+				
+
+
+				
+				
+				
+				
+
+
+				 

@@ -1,0 +1,278 @@
+
+package Gramatica;
+
+import java_cup.runtime.*;
+import java.util.List;
+import java.util.ArrayList;
+
+
+
+parser code
+{:
+	private List<Falta> lista_error = new ArrayList<>();
+	//public String nombre_clase="n/a";
+    /**Metodo al que se llama automáticamente ante algún error sintactico.*/
+    public void syntax_error(Symbol s){
+        System.err.println("Error en la Línea " + (s.right+1) +" Columna "+(s.left+1)+ ". Identificador "
+        +s.value + " no reconocido." );
+		lista_error.add(new Falta(s.right+1,s.left+1,s.value.toString(),"desconocido",Falta.Tipo.SINTACTICO));
+    }
+
+    /**Metodo al que se llama en el momento en que ya no es posible una recuperación de
+    errores.*/
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{
+        System.err.println("Error en la Línea " + (s.right+1)+ " Columna "+(s.left+1)+". Identificador " +
+        s.value + " no reconocido.");
+        System.out.println("Error sintactico:"+s);
+    
+    }
+	public boolean hayFaltas(){
+		return lista_error.size()>0;
+	}
+	
+	public String getFaltas(){
+		String salida="";
+		for(Falta item:lista_error){
+			salida+=item.errMsj();
+		}
+		return salida;
+	}
+	
+:}
+
+
+action code {:
+    //public Nodo raiz=null;
+    //String clase_actual;
+	
+:}
+
+/*terminales reservados*/
+//HTML
+	//Etiquetas de apertura
+terminal String op_Html, op_Head, op_Body, op_Hnumber, op_Title, op_Table, op_Th, op_Td, op_Tr, op_Div, op_P;
+	//Etiquetas de cierre
+terminal String cl_Html, cl_Head, cl_Body, cl_Hnumber, cl_Title, cl_Table, cl_Th, cl_Td, cl_Tr, cl_Div, cl_P, cl_Hr, cl_Br;
+	//Reservadas atributos
+terminal String atributo_Color, atributo_TextColor, atributo_Align, atributo_Font;
+//CPR
+	//Reservadas
+terminal String res_Print, res_Llave, res_Result;	
+	//Tipo Dato
+terminal String tipo_Int,tipo_String,tipo_Bool,tipo_Char,tipo_Double;
+	//RELACIONALES
+terminal String relacional_Diferente,relacional_MenorIgual,relacional_MayorIgual,relacional_Menor,relacional_Mayor;
+	//LOGICOS
+terminal String logico_And,logico_Or,logico_Not;
+	//BOOLEANOS
+terminal String verdadero,falso;
+	//MATEMATICOS
+terminal String igual,mas,menos,dividido,por,modulo;
+	//AGRUPACION Y PUNTUACION
+terminal String lParen,rParen,p_coma,coma,lBrack,rBrack,punto;
+	//OTROS
+terminal String tk_Caracter,tk_Numero,tk_Cadena,tk_Id,tk_Entero;//texto_Html es nuevo
+/*
+* Este terminal tiene un valor string. Recuerda que le dábamos el valor
+* en el código del analizador léxico, al darle como parámetro un valor
+* string al objeto Symbolo.
+*/
+
+
+/*
+* Aquí están los no terminales
+*/
+non terminal S;
+non terminal INICIO ,ATRIBUTO;
+non terminal CUERPO, HEAD, BODY;//nuevo
+non terminal CUERPO_HEAD,TITULO,CUERPO_TITULO;//nuevo
+non terminal TABLA, FILA, ENCABEZADO, CELDA;
+non terminal SUBTITULO, DIV, P;
+non terminal SENTENCIA, COMANDO, CUERPO_COMANDO;
+non terminal DECLARACION, ID, TIPODATO;
+non terminal ASIGNACION, E, AUMENTO, LLAMADA, COMPARACION, CONDICION;
+non terminal IMPLEMENTACION, PRINT;
+
+
+
+/* Precedencia */
+//Logicos
+precedence left logico_Or;
+precedence left logico_And;
+precedence right logico_Not;
+//Relacionales
+precedence left relacional_Diferente,relacional_Mayor,relacional_MayorIgual,relacional_Menor,relacional_MenorIgual,igual;
+//Matematicos
+precedence left mas,menos;
+precedence left por,dividido,modulo;
+/* ­­­­­­­­­­­­­­ Declaración de la gramática  ­­­­­­­­­­­ */
+start with S;
+
+S				::=INICIO;
+				
+
+INICIO 			::=op_Html ATRIBUTO CUERPO cl_Html
+				|op_Html ATRIBUTO cl_Html ;
+				
+CUERPO			::=CUERPO HEAD
+				|CUERPO BODY
+				|CUERPO COMANDO
+				|HEAD 
+				|BODY
+				|COMANDO;//nuevo
+				
+HEAD			::=op_Head ATRIBUTO CUERPO_HEAD cl_Head
+				|op_Head ATRIBUTO cl_Head;//nuevo
+CUERPO_HEAD		::=CUERPO_HEAD COMANDO
+				|CUERPO_HEAD TITULO
+				|COMANDO
+				|TITULO;//nuevo
+				
+TITULO			::=op_Title ATRIBUTO CUERPO_TITULO cl_Title
+				|op_Title ATRIBUTO cl_Title;//nuevo
+CUERPO_TITULO	::=CUERPO_TITULO COMANDO
+				|CUERPO_TITULO tk_Id
+				|COMANDO
+				|tk_Id;//nuevo
+
+BODY			::=op_Body ATRIBUTO SENTENCIA cl_Body
+				|op_Body ATRIBUTO cl_Body;//nuevo
+							
+
+ATRIBUTO		::=atributo_Color igual tk_Cadena p_coma ATRIBUTO
+				|atributo_TextColor igual tk_Cadena p_coma ATRIBUTO
+				|atributo_Align igual tk_Cadena p_coma ATRIBUTO
+				|atributo_Font igual tk_Cadena p_coma ATRIBUTO
+				|relacional_Mayor;
+
+//Tabla				
+TABLA 			::=op_Table ATRIBUTO FILA cl_Table;
+
+FILA 			::=FILA op_Tr ATRIBUTO CELDA cl_Tr
+				|op_Tr ATRIBUTO CELDA cl_Tr
+				|op_Tr ATRIBUTO ENCABEZADO cl_Tr
+				|op_Tr ATRIBUTO cl_Tr;
+				
+ENCABEZADO 		::=ENCABEZADO op_Th ATRIBUTO SENTENCIA cl_Th
+				|op_Th ATRIBUTO SENTENCIA cl_Th
+				|op_Th ATRIBUTO cl_Th;
+				
+CELDA 			::=CELDA op_Td ATRIBUTO SENTENCIA cl_Td
+				|CELDA op_Td ATRIBUTO cl_Td
+				|op_Td ATRIBUTO SENTENCIA cl_Td
+				|op_Td ATRIBUTO cl_Td;
+//Termina Tabla
+//Subtitulos h1, h2, etc.
+SUBTITULO 		::=op_Hnumber ATRIBUTO SENTENCIA cl_Hnumber
+				|op_Hnumber ATRIBUTO op_Hnumber;
+//Termina h1, h2, etc.		
+//DIV
+DIV 			::=op_Div ATRIBUTO SENTENCIA cl_Div		
+				|op_Div ATRIBUTO cl_Div;
+//Termina DIV
+//Parrafo
+P 				::=op_P ATRIBUTO SENTENCIA cl_P
+				|op_P cl_P;
+//Termina Parrafo
+//Sentencia
+SENTENCIA		::=SENTENCIA TABLA
+				|SENTENCIA SUBTITULO
+				|SENTENCIA DIV
+				|SENTENCIA P
+				|SENTENCIA cl_Br
+				|SENTENCIA cl_Hr
+				|SENTENCIA COMANDO
+				|SENTENCIA tk_Id
+				|TABLA
+				|SUBTITULO
+				|DIV
+				|P
+				|cl_Br
+				|cl_Hr
+				|COMANDO
+				|tk_Id;
+//TERMINA Sentencia				
+
+//////////////////////Inicia CPR
+COMANDO			::=res_Llave CUERPO_COMANDO res_Llave;
+				
+CUERPO_COMANDO	::=CUERPO_COMANDO DECLARACION
+				|CUERPO_COMANDO IMPLEMENTACION
+				|CUERPO_COMANDO PRINT
+				|CUERPO_COMANDO AUMENTO
+				|DECLARACION
+				|IMPLEMENTACION
+				|PRINT
+				|AUMENTO;
+				
+DECLARACION		::=ID p_coma;
+
+ID 				::=ID coma tk_Id
+				|ID coma tk_Id ASIGNACION
+				|TIPODATO tk_Id
+				|TIPODATO tk_Id ASIGNACION;
+
+
+TIPODATO		::=tipo_Bool
+				|tipo_Char
+				|tipo_Double
+				|tipo_Int
+				|tipo_String;
+
+ASIGNACION		::=igual CONDICION;				
+
+
+E				::=E mas E
+				|E menos E
+				|E por E
+				|E dividido E
+				|E modulo E
+				|tk_Numero
+				|menos tk_Numero
+				|tk_Entero
+				|menos tk_Entero
+				|tk_Cadena
+				|tk_Caracter
+				|verdadero
+				|falso
+				|AUMENTO
+				|LLAMADA;
+
+AUMENTO			::=tk_Id mas mas
+				|tk_Id menos menos;
+				
+LLAMADA			::=res_Result punto tk_Id lBrack tk_Entero rBrack punto tk_Id
+				|res_Result punto tk_Id punto tk_Id
+				|res_Result punto tk_Id;
+				
+CONDICION		::=CONDICION logico_Or CONDICION
+				|CONDICION logico_And CONDICION
+				|logico_Not CONDICION
+				|lParen CONDICION rParen
+				|COMPARACION;
+				
+COMPARACION		::=E relacional_Diferente E		
+				|E relacional_Mayor E
+				|E relacional_MayorIgual E		
+				|E relacional_Menor E
+				|E relacional_MenorIgual E
+				|E igual igual E
+				|E;
+
+IMPLEMENTACION	::=tk_Id igual CONDICION
+				|tk_Id mas igual CONDICION
+				|tk_Id menos igual CONDICION
+				|tk_Id por igual CONDICION;
+				
+PRINT			::=res_Print lParen CONDICION rParen p_coma;				
+
+				
+
+
+				
+				
+				
+				
+
+
+				 
