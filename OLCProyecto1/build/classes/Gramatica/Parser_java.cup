@@ -1,0 +1,778 @@
+
+package Gramatica;
+
+import java_cup.runtime.*;
+import Estructuras.Nodo;
+import Tabla.Clase;
+
+
+parser code
+{:
+	public Nodo raiz=null;
+	private String id_clase;
+	private Clase myself = new Clase();//nuevo
+	//public String nombre_clase="n/a";
+    /**Metodo al que se llama automáticamente ante algún error sintactico.*/
+    public void syntax_error(Symbol s){
+        System.err.println("Error en la Línea " + (s.right+1) +" Columna "+(s.left+1)+ ". Identificador "
+        +s.value + " no reconocido." );
+        System.out.println("Error sintactico:"+s);
+    }
+
+    /**Metodo al que se llama en el momento en que ya no es posible una recuperación de
+    errores.*/
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{
+        System.err.println("Error en la Línea " + (s.right+1)+ "Columna "+(s.left+1)+". Identificador " +
+        s.value + " no reconocido.");
+        System.out.println("Error sintactico:"+s);
+    
+    }
+	
+    public Nodo getRaiz(){
+        return raiz;
+    }
+	public String getClassId(){
+		return id_clase;
+	}
+	public Clase getMyself(){
+		return myself;
+	}
+	
+	
+	/*private void addSimbolo(Nodo raiz, boolean principal){
+		if(raiz==null)
+			return;
+		int no_hijos = raiz.hijos.size();
+		int i;
+		Nodo hijo=null;
+		Simbolo nuevo;
+		String tipo = "Object";
+		for(i=0;i<no_hijos;i++){
+			hijo=raiz.hijos.get(i);
+			switch(i){
+				case 0:
+					tipo=hijo.lexema;
+					break;
+				default:
+					nuevo = new Simbolo();
+					nuevo.setTipo(tipo);
+					//nuevo.setAmbito(nombre_clase);
+					nuevo.setIdentificador(hijo.lexema);
+					if(principal){
+						lista_simbolos.add(nuevo);
+					}else{
+						lista_auxiliar.add(nuevo);
+					}
+			}
+		}
+	}
+		
+	public List<Simbolo> getSimbolos(){
+		//addClase();
+		return lista_simbolos;
+	}
+	
+	private void addClase(String nombre_clase){
+		for(Simbolo item:lista_simbolos){
+			item.setAmbito(nombre_clase);
+		}
+	}
+*/
+:}
+
+
+action code {:
+    //public Nodo raiz=null;
+    //String clase_actual;
+	
+:}
+
+/*terminales reservados*/
+//RESERVADAS
+	//VISIBILIDAD
+terminal String vis_Protected,vis_Private,vis_Public,vis_Final;
+	//De la clase
+terminal String res_Import, res_Class, res_New;
+	//Tipo Dato
+terminal String tipo_Int,tipo_String,tipo_Bool,tipo_Char,tipo_Double,tipo_Void;
+	//Sentencias de control
+terminal String sentencia_If,sentencia_Else, sentencia_While, sentencia_Do, sentencia_Switch, sentencia_For;
+terminal String sentencia_Case, sentencia_Default;
+	//Sentencias de salida
+terminal String res_Break, res_Return;
+//RELACIONALES
+terminal String relacional_Diferente,relacional_MenorIgual,relacional_MayorIgual,relacional_Menor,relacional_Mayor;
+//LOGICOS
+terminal String logico_And,logico_Or,logico_Not;
+//BOOLEANOS
+terminal String verdadero,falso;
+//MATEMATICOS
+terminal String igual,mas,menos,dividido,por;
+//AGRUPACION Y PUNTUACION
+terminal String punto,coma,lParen,rParen,p_coma,d_puntos,lKey,rKey;
+//OTROS OTROS
+terminal String tk_Caracter,tk_Numero,tk_Cadena,tk_Id,tk_Entero;
+
+/*
+* Este terminal tiene un valor string. Recuerda que le dábamos el valor
+* en el código del analizador léxico, al darle como parámetro un valor
+* string al objeto Symbolo.
+*/
+
+
+/*
+* Aquí están los no terminales
+*/
+non terminal Nodo S, INICIO;
+non terminal Nodo IMPORTS, CUERPO,VISIBILIDAD;
+non terminal Nodo LLAMADA;
+non terminal Nodo DECLARACION, ID;
+non terminal Nodo METODO, CONSTRUCTOR;
+non terminal Nodo TIPODATO, ASIGNACION;
+non terminal Nodo CONDICION;
+non terminal Nodo COMPARACION;
+non terminal Nodo E;
+non terminal Nodo IF, ELSEIF, ELSE, WHILE, DO, FOR, SWITCH;
+non terminal Nodo CASE, DEFAULT, PASO, SENTENCIA, SENTENCIAW;
+non terminal Nodo VALORES, PARAMETRO;
+
+
+
+/* Precedencia */
+//Logicos
+precedence left logico_Or;
+precedence left logico_And;
+precedence right logico_Not;
+//Relacionales
+precedence left relacional_Diferente,relacional_Mayor,relacional_MayorIgual,relacional_Menor,relacional_MenorIgual,igual;
+//Matematicos
+precedence left mas,menos;
+precedence left por,dividido;
+/* ­­­­­­­­­­­­­­ Declaración de la gramática  ­­­­­­­­­­­ */
+start with S;
+
+S				::=INICIO:v1
+				{:
+				raiz=v1;
+				:};
+
+INICIO			::=IMPORTS VISIBILIDAD res_Class tk_Id:v1 lKey CUERPO:v2 rKey
+				{:
+				Nodo padre = new Nodo("Clase","Clase");
+				padre.add(new Nodo(v1,"Clase_id"));
+				padre.add(v2);
+				id_clase=v1;
+				myself.setId(v1);//nuevo
+				RESULT=padre;
+				:}
+				|VISIBILIDAD res_Class tk_Id:v1 lKey CUERPO:v2 rKey
+				{:
+				Nodo padre = new Nodo("Clase","Clase");
+				padre.add(new Nodo(v1,"Clase_id"));
+				padre.add(v2);
+				id_clase=v1;
+				myself.setId(v1);//nuevo
+				RESULT=padre;
+				:}
+				|IMPORTS res_Class tk_Id:v1 lKey CUERPO:v2 rKey
+				{:
+				Nodo padre = new Nodo("Clase","Clase");
+				padre.add(new Nodo(v1,"Clase_id"));
+				padre.add(v2);
+				id_clase=v1;
+				myself.setId(v1);//nuevo
+				RESULT=padre;
+				:}
+				|res_Class tk_Id:v1 lKey CUERPO:v2 rKey
+				{:
+				Nodo padre = new Nodo("Clase","Clase");
+				padre.add(new Nodo(v1,"Clase_id"));
+				padre.add(v2);
+				id_clase=v1;
+				myself.setId(v1);//nuevo
+				RESULT=padre;
+				:}
+				|IMPORTS VISIBILIDAD res_Class tk_Id:v1 lKey rKey
+				{:
+				Nodo padre = new Nodo("Clase","Clase");
+				padre.add(new Nodo(v1,"Clase_id"));
+				id_clase=v1;
+				myself.setId(v1);//nuevo
+				RESULT=padre;
+				:}
+				|VISIBILIDAD res_Class tk_Id:v1 lKey rKey
+				{:
+				Nodo padre = new Nodo("Clase","Clase");
+				padre.add(new Nodo(v1,"Clase_id"));
+				id_clase=v1;
+				myself.setId(v1);//nuevo
+				RESULT=padre;
+				:}
+				|IMPORTS res_Class tk_Id:v1 lKey rKey
+				{:
+				Nodo padre = new Nodo("Clase","Clase");
+				padre.add(new Nodo(v1,"Clase_id"));
+				id_clase=v1;
+				myself.setId(v1);//nuevo
+				RESULT=padre;
+				:}
+				|res_Class tk_Id:v1 lKey rKey
+				{:
+				Nodo padre = new Nodo("Clase","Clase");
+				padre.add(new Nodo(v1,"Clase_id"));
+				id_clase=v1;
+				myself.setId(v1);//nuevo
+				RESULT=padre;
+				:};
+			
+CUERPO			::=CUERPO:v1 DECLARACION:v2
+				{:
+				Nodo padre = v1;
+				padre.add(v2);
+				RESULT = padre;
+				:}
+				|CUERPO:v1 METODO:v2
+				{:
+				Nodo padre = v1;
+				padre.add(v2);
+				RESULT = padre;
+				:}
+				|CUERPO:v1 CONSTRUCTOR:v2
+				{:
+				Nodo padre = v1;
+				padre.add(v2);
+				RESULT = padre;
+				:}
+				|DECLARACION:v1 
+				{:
+				Nodo padre = new Nodo("","CUERPO");
+				padre.add(v1);
+				RESULT=padre;
+				:}
+				|METODO:v1 
+				{:
+				Nodo padre = new Nodo("","CUERPO");
+				padre.add(v1);
+				RESULT=padre;
+				:}
+				|CONSTRUCTOR:v1
+				{:
+				Nodo padre = new Nodo("","CUERPO");
+				padre.add(v1);
+				RESULT=padre;
+				:}
+				; 
+				
+IMPORTS			::=IMPORTS:v1 res_Import LLAMADA:v2 punto por p_coma
+				{:
+				Nodo padre = v1;
+				padre.add(v2);
+				padre.add(new Nodo("*","import_all"));
+				RESULT = padre;
+				:}
+				|IMPORTS:v1 res_Import LLAMADA:v2 p_coma
+				{:
+				Nodo padre = v1;
+				padre.add(v2);
+				RESULT = padre;
+				:}
+				|res_Import LLAMADA:v1 punto por p_coma
+				{:
+				Nodo padre = new Nodo("IMPORTS","res_Import");
+				padre.add(v1);
+				padre.add(new Nodo("*","import_all"));
+				RESULT = padre;
+				:}
+				|res_Import LLAMADA:v1 p_coma
+				{:
+				Nodo padre = new Nodo("IMPORTS","res_Import");
+				padre.add(v1);
+				RESULT = padre;
+				:}
+				;
+
+LLAMADA 		::=LLAMADA:v1 punto tk_Id:v2
+				{:
+				Nodo padre = v1;
+				padre.add(new Nodo(v2,"tk_Id"));
+				RESULT = padre;
+				:}
+				|tk_Id:v1
+				{:
+				RESULT = new Nodo(v1,"tk_id");
+				:};
+				
+DECLARACION     ::=ID:v1 ASIGNACION p_coma
+				{:	
+				RESULT = v1;
+				:}
+				|ID:v1 p_coma
+				{:
+				RESULT = v1;
+				:};
+				
+ID				::=ID:v1 coma tk_Id :v2
+				{:
+				Nodo padre = v1;
+				v1.add(new Nodo(v2,"tk_Id"));
+				RESULT = padre;
+				:}
+				|VISIBILIDAD TIPODATO:v1 tk_Id:v2
+				{:
+				Nodo padre = new Nodo("","DECLARACION");
+				padre.add(v1);
+				padre.add(new Nodo(v2,"tk_Id"));
+				RESULT = padre;
+				:}
+				|TIPODATO:v1 tk_Id:v2
+				{:
+				Nodo padre = new Nodo("","DECLARACION");
+				padre.add(v1);
+				padre.add(new Nodo(v2,"tk_Id"));
+				RESULT = padre;
+				:};
+				
+TIPODATO		::=tipo_Bool
+				{:
+				RESULT=new Nodo("bool","TIPODATO");
+				:}
+				|tipo_Char
+				{:
+				RESULT=new Nodo("char","TIPODATO");
+				:}
+				|tipo_Double
+				{:
+				RESULT=new Nodo("double","TIPODATO");
+				:}
+				|tipo_Int
+				{:
+				RESULT=new Nodo("int","TIPODATO");
+				:}
+				|tipo_String
+				{:
+				RESULT=new Nodo("string","TIPODATO");
+				:}
+				|tipo_Void
+				{:
+				RESULT=new Nodo("void","TIPODATO");
+				:}
+				|tk_Id:v1
+				{:
+				RESULT=new Nodo(v1,"TIPODATO");
+				:};
+			 
+VISIBILIDAD		::=vis_Final
+				|vis_Private
+				|vis_Public
+				|vis_Protected;	
+
+ASIGNACION      ::=igual CONDICION
+				|igual res_New tk_Id lParen VALORES rParen
+				|igual res_New tk_Id lParen rParen;
+				
+E				::=E mas E
+				|E menos E
+				|E por E
+				|E dividido E
+				|tk_Numero
+				|menos tk_Numero
+				|tk_Entero
+				|menos tk_Entero
+				|lParen CONDICION rParen//nuevo
+				|LLAMADA lParen VALORES rParen
+				|LLAMADA lParen rParen
+				|LLAMADA
+				|tk_Cadena
+				|tk_Caracter
+				|verdadero
+				|falso;
+				
+CONDICION		::=CONDICION logico_Or CONDICION
+				|CONDICION logico_And CONDICION
+				|logico_Not CONDICION
+				|COMPARACION;
+				
+COMPARACION		::=E relacional_Diferente E		
+				|E relacional_Mayor E
+				|E relacional_MayorIgual E		
+				|E relacional_Menor E
+				|E relacional_MenorIgual E
+				|E igual igual E
+				|E;
+
+IF				::=sentencia_If lParen CONDICION rParen lKey SENTENCIA rKey ELSEIF ELSE
+				|sentencia_If lParen CONDICION rParen lKey SENTENCIA rKey ELSEIF
+				|sentencia_If lParen CONDICION rParen lKey SENTENCIA rKey ELSE
+				|sentencia_If lParen CONDICION rParen lKey SENTENCIA rKey
+				|sentencia_If lParen CONDICION rParen lKey rKey ELSEIF ELSE
+				|sentencia_If lParen CONDICION rParen lKey rKey ELSEIF
+				|sentencia_If lParen CONDICION rParen lKey rKey ELSE
+				|sentencia_If lParen CONDICION rParen lKey rKey
+				;
+
+ELSEIF			::=ELSEIF sentencia_Else sentencia_If lParen CONDICION rParen lKey SENTENCIA rKey
+				|ELSEIF sentencia_Else sentencia_If lParen CONDICION rParen lKey rKey
+				|sentencia_Else sentencia_If lParen CONDICION rParen lKey SENTENCIA rKey
+				|sentencia_Else sentencia_If lParen CONDICION rParen lKey rKey
+				;							
+				
+ELSE			::=sentencia_Else lKey SENTENCIA rKey
+				|sentencia_Else lKey rKey
+				;
+				
+WHILE			::=sentencia_While lParen CONDICION rParen lKey SENTENCIAW rKey
+				|sentencia_While lParen CONDICION rParen lKey rKey
+				;				
+
+FOR				::=sentencia_For lParen tipo_Int tk_Id igual E p_coma CONDICION p_coma PASO rParen lKey SENTENCIA rKey
+				|sentencia_For lParen tk_Id igual E p_coma CONDICION p_coma PASO rParen lKey SENTENCIA rKey
+				|sentencia_For lParen tipo_Int tk_Id igual E p_coma CONDICION p_coma PASO rParen lKey rKey
+				|sentencia_For lParen tk_Id igual E p_coma CONDICION p_coma PASO rParen lKey rKey
+				;				
+
+PASO			::=tk_Id mas mas
+				|tk_Id menos menos
+				|tk_Id igual E
+				|tk_Id mas igual E
+				|tk_Id menos igual E
+				|tk_Id por igual E
+				;
+				
+DO 				::=sentencia_Do lKey SENTENCIA rKey sentencia_While lParen CONDICION rParen p_coma
+				|sentencia_Do lKey rKey sentencia_While lParen CONDICION rParen p_coma
+				;
+				
+SWITCH			::=sentencia_Switch lParen E rParen lKey CASE DEFAULT rKey
+				|sentencia_Switch lParen E rParen lKey CASE rKey
+				;
+
+CASE			::=CASE sentencia_Case E d_puntos SENTENCIA res_Break p_coma 	
+				|CASE sentencia_Case E d_puntos res_Break p_coma 
+				|sentencia_Case E d_puntos SENTENCIA res_Break p_coma 
+				|sentencia_Case E d_puntos res_Break p_coma;
+
+DEFAULT 		::=sentencia_Default d_puntos SENTENCIA res_Break p_coma
+				|sentencia_Default d_puntos res_Break p_coma;
+				
+				
+SENTENCIA		::=SENTENCIA:v1 IF
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIA:v1 WHILE
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIA:v1 FOR
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIA:v1 DO
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIA:v1 SWITCH
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIA:v1 DECLARACION:v2
+				{:
+				Nodo padre = v1;
+				if(padre==null){
+					padre=new Nodo("","SENTENCIA");
+				}
+				padre.add(v2);
+				RESULT=padre;
+				:}
+				|SENTENCIA:v1 LLAMADA lParen VALORES rParen p_coma
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIA:v1 LLAMADA lParen rParen p_coma
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIA:v1 LLAMADA p_coma
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIA:v1 LLAMADA ASIGNACION p_coma
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIA:v1 res_Return CONDICION p_coma
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIA:v1 res_Return p_coma
+				{:
+				RESULT=v1;	
+				:}
+				//|res_Break p_coma SENTENCIA								
+				|IF 
+				|WHILE 
+				|FOR 
+				|DO 
+				|SWITCH 
+				|DECLARACION:v1
+				{:
+				Nodo padre = new Nodo("","SENTENCIA");
+				padre.add(v1);
+				RESULT=padre;
+				:}
+				|LLAMADA lParen VALORES rParen p_coma 
+				|LLAMADA lParen rParen p_coma 
+				|LLAMADA p_coma 
+				|LLAMADA ASIGNACION p_coma 
+				//|res_Break p_coma 
+				|res_Return p_coma 
+				|res_Return CONDICION p_coma;
+				
+SENTENCIAW		::=SENTENCIAW:v1 IF
+				{:
+				RESULT=v1;	
+				:}
+				|SENTENCIAW:v1 WHILE
+				{:
+				RESULT=v1;	
+				:}				
+				|SENTENCIAW:v1 FOR
+				{:
+				RESULT=v1;	
+				:}				
+				|SENTENCIAW:v1 DO
+				{:
+				RESULT=v1;	
+				:}				
+				|SENTENCIAW:v1 SWITCH
+				{:
+				RESULT=v1;	
+				:}				
+				|SENTENCIAW:v1 DECLARACION:v2
+				{:
+				Nodo padre = v1;
+				if(padre!=null){
+					padre=new Nodo("","SENTENCIA");
+				}
+				padre.add(v2);
+				RESULT=padre;
+				:}
+				|SENTENCIAW:v1 LLAMADA lParen VALORES rParen p_coma
+				{:
+				RESULT=v1;	
+				:}				
+				|SENTENCIAW:v1 LLAMADA lParen rParen p_coma
+				{:
+				RESULT=v1;	
+				:}				
+				|SENTENCIAW:v1 LLAMADA p_coma
+				{:
+				RESULT=v1;	
+				:}				
+				|SENTENCIAW:v1 LLAMADA ASIGNACION p_coma
+				{:
+				RESULT=v1;	
+				:}				
+				|SENTENCIAW:v1 res_Return CONDICION p_coma
+				{:
+				RESULT=v1;	
+				:}				
+				|SENTENCIAW:v1 res_Return p_coma
+				{:
+				RESULT=v1;	
+				:}				
+				|SENTENCIAW:v1 res_Break p_coma
+				{:
+				RESULT=v1;	
+				:}				
+				|IF 
+				|WHILE 
+				|FOR 
+				|DO 
+				|SWITCH 
+				|DECLARACION:v1
+				{:
+				Nodo padre = new Nodo("","SENTENCIA");
+				padre.add(v1);
+				RESULT=padre;
+				:}
+				|LLAMADA lParen VALORES rParen p_coma 
+				|LLAMADA lParen rParen p_coma 
+				|LLAMADA p_coma 
+				|LLAMADA ASIGNACION p_coma 
+				|res_Break p_coma 
+				|res_Return p_coma 
+				|res_Return CONDICION p_coma;
+				
+VALORES			::=VALORES:v1 coma CONDICION:v2
+				{:
+				Nodo padre = v1;
+				padre.add(v2);
+				RESULT=padre;
+				:}
+				|CONDICION:v1
+				{:
+				Nodo padre = new Nodo("","VALORES");
+				padre.add(v1);
+				RESULT=padre;
+				:};
+								
+METODO	       	::=VISIBILIDAD TIPODATO:v1 tk_Id:v2 lParen PARAMETRO:v3 rParen lKey:l1 SENTENCIA:v4 rKey:l2
+				{:
+				Nodo padre = new Nodo("","METODO");
+				padre.add(v1);
+				padre.add(new Nodo(Integer.toString((Integer.parseInt(l2)-Integer.parseInt(l1))),""));
+				padre.add(new Nodo(v2,"Funcion_id"));
+				padre.add(v3);
+				padre.add(v4);
+				myself.add(v2);
+				RESULT = padre;
+				:}
+				|VISIBILIDAD TIPODATO:v1 tk_Id:v2 lParen PARAMETRO:v3 rParen lKey:l1 rKey:l2
+				{:
+				Nodo padre = new Nodo("","METODO");
+				padre.add(v1);
+				padre.add(new Nodo(Integer.toString((Integer.parseInt(l2)-Integer.parseInt(l1))),""));
+				padre.add(new Nodo(v2,"Funcion_id"));
+				padre.add(v3);
+				myself.add(v2);
+				RESULT = padre;
+				:}
+				|VISIBILIDAD TIPODATO:v1 tk_Id:v2 lParen rParen lKey:l1 SENTENCIA:v3 rKey:l2
+				{:
+				Nodo padre = new Nodo("","METODO");
+				padre.add(v1);
+				padre.add(new Nodo(Integer.toString((Integer.parseInt(l2)-Integer.parseInt(l1))),""));
+				padre.add(new Nodo(v2,"Funcion_id"));
+				padre.add(v3);
+				myself.add(v2);
+				RESULT = padre;
+				:}
+				|VISIBILIDAD TIPODATO:v1 tk_Id:v2 lParen rParen lKey:l1  rKey:l2
+				{:
+				Nodo padre = new Nodo("","METODO");
+				padre.add(v1);
+				padre.add(new Nodo(Integer.toString((Integer.parseInt(l2)-Integer.parseInt(l1))),""));
+				padre.add(new Nodo(v2,"Funcion_id"));
+				myself.add(v2);
+				RESULT = padre;
+				:}
+				|TIPODATO:v1 tk_Id:v2 lParen PARAMETRO:v3 rParen lKey:l1 SENTENCIA:v4 rKey:l2//sin visibilidad
+				{:
+				Nodo padre = new Nodo("","METODO");
+				padre.add(v1);
+				padre.add(new Nodo(Integer.toString((Integer.parseInt(l2)-Integer.parseInt(l1))),""));
+				padre.add(new Nodo(v2,"Funcion_id"));
+				padre.add(v3);
+				padre.add(v4);
+				myself.add(v2);
+				RESULT = padre;
+				:}
+				|TIPODATO:v1 tk_Id:v2 lParen PARAMETRO:v3 rParen lKey:l1 rKey:l2
+				{:
+				Nodo padre = new Nodo("","METODO");
+				padre.add(v1);
+				padre.add(new Nodo(Integer.toString((Integer.parseInt(l2)-Integer.parseInt(l1))),""));
+				padre.add(new Nodo(v2,"Funcion_id"));
+				padre.add(v3);
+				myself.add(v2);
+				RESULT = padre;
+				:}
+				|TIPODATO:v1 tk_Id:v2 lParen rParen lKey:l1 SENTENCIA:v3 rKey:l2
+				{:
+				Nodo padre = new Nodo("","METODO");
+				padre.add(v1);
+				padre.add(new Nodo(Integer.toString((Integer.parseInt(l2)-Integer.parseInt(l1))),""));
+				padre.add(new Nodo(v2,"Funcion_id"));
+				padre.add(v3);
+				myself.add(v2);
+				RESULT = padre;
+				:}
+				|TIPODATO:v1 tk_Id:v2 lParen rParen lKey:l1  rKey:l2
+				{:
+				Nodo padre = new Nodo("","METODO");
+				padre.add(v1);
+				padre.add(new Nodo(Integer.toString((Integer.parseInt(l2)-Integer.parseInt(l1))),""));
+				padre.add(new Nodo(v2,"Funcion_id"));
+				myself.add(v2);
+				RESULT = padre;
+				:}
+				;	
+
+				
+CONSTRUCTOR		::=VISIBILIDAD tk_Id:v1 lParen PARAMETRO:v2 rParen lKey SENTENCIA rKey
+				{:
+				Nodo padre = new Nodo("","CONSTRUCTOR");
+				padre.add(new Nodo(v1,"tk_Id"));
+				padre.add(v2);
+				RESULT = padre;
+				:}
+				|VISIBILIDAD tk_Id:v1 lParen PARAMETRO:v2 rParen lKey rKey
+				{:
+				Nodo padre = new Nodo("","CONSTRUCTOR");
+				padre.add(new Nodo(v1,"tk_Id"));
+				padre.add(v2);
+				RESULT = padre;
+				:}
+				|VISIBILIDAD tk_Id:v1 lParen rParen lKey SENTENCIA rKey
+				{:
+				Nodo padre = new Nodo("","CONSTRUCTOR");
+				padre.add(new Nodo(v1,"tk_Id"));
+				RESULT = padre;
+				:}
+				|VISIBILIDAD tk_Id:v1 lParen rParen lKey rKey
+				{:
+				Nodo padre = new Nodo("","CONSTRUCTOR");
+				padre.add(new Nodo(v1,"tk_Id"));
+				RESULT = padre;
+				:}
+				|tk_Id:v1 lParen PARAMETRO:v2 rParen lKey SENTENCIA rKey
+				{:
+				Nodo padre = new Nodo("","CONSTRUCTOR");
+				padre.add(new Nodo(v1,"tk_Id"));
+				padre.add(v2);
+				RESULT = padre;
+				:}
+				|tk_Id:v1 lParen PARAMETRO:v2 rParen lKey rKey
+				{:
+				Nodo padre = new Nodo("","CONSTRUCTOR");
+				padre.add(new Nodo(v1,"tk_Id"));
+				padre.add(v2);
+				RESULT = padre;
+				:}
+				|tk_Id:v1 lParen rParen lKey SENTENCIA rKey
+				{:
+				Nodo padre = new Nodo("","CONSTRUCTOR");
+				padre.add(new Nodo(v1,"tk_Id"));
+				RESULT = padre;
+				:}
+				|tk_Id:v1 lParen rParen lKey rKey
+				{:
+				Nodo padre = new Nodo("","CONSTRUCTOR");
+				padre.add(new Nodo(v1,"tk_Id"));
+				RESULT = padre;
+				:}
+				;
+
+				
+PARAMETRO     	::=PARAMETRO:v1 coma TIPODATO:v2 tk_Id:v3
+				{:
+				Nodo padre = v1;
+				padre.add(v2);
+				padre.add(new Nodo(v3,"tk_Id"));
+				RESULT=padre;
+				:}
+				|TIPODATO:v1 tk_Id:v2
+				{:
+				Nodo padre = new Nodo("","PARAMETRO");
+				padre.add(v1);
+				padre.add(new Nodo(v2,"tk_Id"));
+				RESULT=padre;
+				:};
+				
+				
+				
+				
+
+
+				 
