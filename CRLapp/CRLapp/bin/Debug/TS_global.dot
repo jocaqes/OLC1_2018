@@ -1,0 +1,28 @@
+digraph G{
+node[shape=plaintext];
+tabla[label=<<TABLE border="0" cellspacing="0" cellborder="1">
+]<TR>
+<TD>Ambito</TD><TD>global</TD>
+</TR><TR>
+<TD>Variable: global_int</TD><TD>No tiene valor asignado</TD>
+</TR>
+<TR>
+<TD>Variable: global_double</TD><TD>No tiene valor asignado</TD>
+</TR>
+<TR>
+<TD>Variable: global_char</TD><TD>J</TD>
+</TR>
+<TR>
+<TD>Variable: global_string</TD><TD>hola global</TD>
+</TR>
+<TR>
+<TD>Variable: global_bool</TD><TD>true</TD>
+</TR>
+<TR>
+<TD>Variable: global_exp</TD><TD>False</TD>
+</TR>
+<TR>
+<TD>Variable: concatenacion_1</TD><TD>hola globalJ</TD>
+</TR>
+</TABLE>>];
+}

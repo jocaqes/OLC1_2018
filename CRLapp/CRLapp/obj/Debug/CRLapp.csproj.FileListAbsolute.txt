@@ -1,0 +1,11 @@
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\bin\Debug\CRLapp.exe.config
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\bin\Debug\CRLapp.exe
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\bin\Debug\CRLapp.pdb
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\obj\Debug\CRLapp.Form1.resources
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\obj\Debug\CRLapp.Properties.Resources.resources
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\obj\Debug\CRLapp.csproj.GenerateResource.Cache
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\obj\Debug\CRLapp.exe
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\obj\Debug\CRLapp.pdb
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\bin\Debug\Irony.dll
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\bin\Debug\Irony.pdb
+D:\Sistemas\WorkSpace\VisualExpress\CRLapp\CRLapp\obj\Debug\CRLapp.csprojResolveAssemblyReference.cache
